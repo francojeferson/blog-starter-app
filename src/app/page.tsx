@@ -1,30 +1,31 @@
-import Container from "@/app/_components/container";
-import { HeroPost } from "@/app/_components/hero-post";
-import { Intro } from "@/app/_components/intro";
-import { MoreStories } from "@/app/_components/more-stories";
-import { getAllPosts } from "@/lib/api";
+import React from "react";
+import CheckoutPage from "../app/_components/checkout-page";
+import { Montserrat } from "next/font/google";
+import type { Metadata } from "next";
+import { getCheckoutBySlug } from "@/app/_utils/api";
+// import { baseCheckout } from "@/lib/site-info";
 
-export default function Index() {
-  const allPosts = getAllPosts();
+const baseCheckout = "splash-foam-checkout";
 
-  const heroPost = allPosts[0];
+const montserrat = Montserrat({ subsets: ["latin"] });
 
-  const morePosts = allPosts.slice(1);
+export function generateMetadata(): Metadata {
+  const info = getCheckoutBySlug(baseCheckout);
+
+  return {
+    title: info.metaTitle,
+    description: info.metaDescription,
+  };
+}
+
+const Page = () => {
+  const checkoutInfo = getCheckoutBySlug(baseCheckout);
 
   return (
-    <main>
-      <Container>
-        <Intro />
-        <HeroPost
-          title={heroPost.title}
-          coverImage={heroPost.coverImage}
-          date={heroPost.date}
-          author={heroPost.author}
-          slug={heroPost.slug}
-          excerpt={heroPost.excerpt}
-        />
-        {morePosts.length > 0 && <MoreStories posts={morePosts} />}
-      </Container>
-    </main>
+    <div className={montserrat.className}>
+      <CheckoutPage info={checkoutInfo} />
+    </div>
   );
-}
+};
+
+export default Page;

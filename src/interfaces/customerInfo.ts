@@ -1,0 +1,20 @@
+export type CustomerInfoType = {
+  sessionId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  country: string;
+  address: string;
+  address2: string;
+  city: string;
+  state: string;
+  zip: string;
+  card: string;
+  month: string;
+  year: string;
+  cvv: string;
+  couponActive: boolean;
+  couponValue: string;
+  notes?: string;
+};

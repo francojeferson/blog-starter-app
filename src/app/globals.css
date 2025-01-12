@@ -1,3 +1,218 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.green-text-shadow {
+  text-shadow: 0 1px 1px #02672c;
+}
+.text-shadow {
+  text-shadow: 0 1px 1px #000;
+}
+.spec-grid-shadow {
+  box-shadow: 0 0 9px 1px rgba(0, 0, 0, 0.1);
+}
+/* Tailwind CSS does not support keyframes out of the box, so you must define them manually */
+@keyframes grow-shrink {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Tailwind utility for infinite animation and hover effect */
+.animate-grow-shrink {
+  animation: grow-shrink 2s infinite linear;
+}
+
+/* Custom hover effect using Tailwind's approach but needs manual input because Tailwind doesn't support transform scales at custom values by default */
+.hover-grow {
+  transition: transform 0.3s ease-in-out;
+}
+.hover-grow:hover {
+  transform: scale(1.2);
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.slide-down {
+  animation: slideDown 1s ease-in-out;
+}
+
+.ticker-text {
+  position: absolute;
+  white-space: nowrap;
+  animation: ticker 9s linear infinite;
+}
+
+@keyframes ticker {
+  0% {
+    left: 130%;
+  } /* Start off-screen */
+  100% {
+    left: -130%;
+  } /* Move fully off-screen */
+}
+
+@keyframes fillUp {
+  0% {
+    stroke-dashoffset: 100;
+    stroke: #3b82f6;
+    stroke-width: 2;
+    background: transparent;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    stroke: #fff;
+    stroke-width: 6;
+    background: #22c55e;
+  }
+  75% {
+    stroke-dashoffset: 0;
+    stroke: #fff;
+    stroke-width: 6;
+    transform: scale(1.2);
+    background: #22c55e;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    stroke: #fff;
+    stroke-width: 6;
+    transform: scale(1);
+    background: #22c55e;
+  }
+}
+@keyframes fillUpRed {
+  0% {
+    stroke-dashoffset: 100;
+    stroke: #3b82f6;
+    stroke-width: 2;
+    background: transparent;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    stroke: #fff;
+    stroke-width: 6;
+    background: #b90000;
+  }
+  75% {
+    stroke-dashoffset: 0;
+    stroke: #fff;
+    stroke-width: 6;
+    transform: scale(1.2);
+    background: #b90000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    stroke: #fff;
+    stroke-width: 6;
+    transform: scale(1);
+    background: #b90000;
+  }
+}
+
+.checkmark {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  stroke: #fff;
+  stroke-miterlimit: 10;
+  margin: 10% auto;
+  box-shadow: inset 0px 0px 0px #fff;
+  animation: fillUp 2s ease-in-out forwards;
+}
+.checkmark_red {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  stroke: #fff;
+  stroke-miterlimit: 10;
+  margin: 10% auto;
+  box-shadow: inset 0px 0px 0px #fff;
+  animation: fillUpRed 2s ease-in-out forwards;
+}
+.checkmark__circle_red {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  stroke-linecap: round;
+  animation: fillUpRed 1s ease-in-out forwards;
+}
+
+.checkmark__circle {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  stroke-linecap: round;
+  animation: fillUp 1s ease-in-out forwards;
+}
+
+.checkmark__check {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: checkmark 0.5s 0.5s ease forwards;
+}
+
+@keyframes checkmark {
+  0% {
+    stroke-dashoffset: 30;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Resetting webkit appearance on form elements */
+input[type="color"],
+input[type="date"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="email"],
+input[type="month"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="text"],
+input[type="time"],
+input[type="url"],
+input[type="week"],
+textarea,
+select,
+button {
+  -webkit-appearance: none; /* Remove default styling on iOS/Safari */
+  -moz-appearance: none; /* Remove default styling on Firefox */
+  appearance: none; /* Remove default styling on other browsers */
+}
+
+@media (max-width: 767px) {
+  input[type="color"],
+  input[type="date"],
+  input[type="datetime"],
+  input[type="datetime-local"],
+  input[type="email"],
+  input[type="month"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="text"],
+  input[type="time"],
+  input[type="url"],
+  input[type="week"],
+  select:focus,
+  textarea {
+    font-size: 16px;
+  }
+}

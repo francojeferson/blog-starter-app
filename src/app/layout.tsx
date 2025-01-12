@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import cn from "classnames";
 import { ThemeSwitcher } from "./_components/theme-switcher";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 import "./globals.css";
 
@@ -33,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="alternate" type="application/rss+xml" href="/feed.xml" />
       </head>
       <body className={cn(inter.className, "dark:bg-slate-900 dark:text-slate-400")}>
-        <ThemeSwitcher />
+        <ThemeProvider />
         <div className="min-h-screen">{children}</div>
         <Footer />
       </body>

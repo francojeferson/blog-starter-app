@@ -33,6 +33,11 @@ const CheckoutPage = ({ info }: Props) => {
       {info.template === "2" && (
         <div className="flex flex-col items-center relative">
           {/* Build this Page following the same patterns as Template1 */}
+          <CheckoutHeader info={info} />
+          <CheckoutForm info={info} />
+          <Footer info={info} />
+          <FunnelFluxScripts funnelFlux={info.funnelFlux} />
+          <CheckoutClickId />
         </div>
       )}
     </>

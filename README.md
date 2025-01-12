@@ -1,3 +1,51 @@
+# Project
+
+The goal for this project is to create a "Template 2" for our checkout portal.
+
+**Current Template 1** - [https://clean.buysplashcleaner.com/checkout](https://clean.buysplashcleaner.com/checkout)
+
+**_Desired Template 2_** - [https://www.oriclehearing.com/hear/checkout.php](https://www.oriclehearing.com/hear/checkout.php)
+
+To speed up this project, do not worry about the sidebar or embedded upsells. **Refer to [this screenshot](https://i.imgur.com/P7OQBn6.jpeg).**
+
+## This is a Next.js + Typescript + Tailwind CSS project refrencing Markdown files.
+
+This build is designed to work across multiple funnels.
+
+Dynamic content (product specific content..) and image links are stored in markdown files at the root - `/_checkout/splash-foam-checkout.md`.
+
+Home page `/src/app/page.tsx` reads markdown content and passes it to the `CheckoutPage` component - `/src/app/_components/checkout-page.tsx`.
+
+`CheckoutPage` renders the correct template based on the `info.template` field.
+
+## Goals
+
+Create a templatized version of the Oricle Hearing Checkout page but refrencing the content from `splash-foam-checkout.md`
+
+I should be able to swtich from template 1 to template 2 by updating the `template` field in the markdown file and refreshing the page.
+
+## Bonus Goals
+
+Stick as closely as possible to my current style.
+
+Keep file structure organized
+
+Keep types organized if modifying or adding fields
+
+## To Get Started
+
+Clone the repo to your local machine then
+
+_Install packages locally_
+
+> `yarn install`
+
+_run local dev environment_
+
+> `yarn run dev`
+
+# Vercel Info
+
 # A statically generated blog example using Next.js, Markdown, and TypeScript
 
 This is the existing [blog-starter](https://github.com/vercel/next.js/tree/canary/examples/blog-starter) plus TypeScript.

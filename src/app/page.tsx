@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { getCheckoutBySlug } from "@/app/_utils/api";
 // import { baseCheckout } from "@/lib/site-info";
 
-const baseCheckout = "splash-foam-checkout";
+const baseCheckout = "splash-foam-checkout-2";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 

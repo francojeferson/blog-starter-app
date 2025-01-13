@@ -64,4 +64,8 @@ export type CheckoutPageType = {
   };
   buttonCta: string;
   content: string;
+
+  // New optional fields for dynamic badges
+  hotBadge?: string;
+  bestSellerBadge?: string;
 };

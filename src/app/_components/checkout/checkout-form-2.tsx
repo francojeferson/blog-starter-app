@@ -2,35 +2,43 @@
 import React, { useState, useEffect } from "react";
 import { CheckoutPageType } from "@/interfaces/checkoutPage";
 import { useRouter } from "next/navigation";
-import { useSession } from "@/app/_context/SessionContext";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
+// ========== Imports for Reusable Components ==========
+import AnnouncementBar from "./checkout-announcement-bar";
+import DiscountBar2 from "./checkout-discount-bar-2";
+import QuantitySelector2 from "./checkout-quantity-selector-2";
+import CustomerInfo2 from "./checkout-customer-info-2";
+import PaymentOptions2 from "./checkout-payment-options-2";
+import CheckoutMobilePaymentOptions2 from "./checkout-mobile-payment-options-2";
+import CheckoutCouponPop2 from "./checkout-coupon-pop-2";
+import PaypalPop2 from "./checkout-paypal-pop-2";
+import HandleSessionStart from "./checkout-handle-session-start";
+
+// ========== Utility Imports ==========
+import { useSession } from "@/app/_context/SessionContext";
+import { useTracking } from "@/app/_context/TrackingContext";
+import { delay } from "@/app/_utils/delay";
+import { emergencyStartSession } from "@/app/_utils/emergencySessionStart";
+import { encryptCreditCard } from "@/app/_utils/encryptUtils";
+import { sendGAEvent } from "@next/third-parties/google";
+
+// ========== Interfaces / Types ==========
 import { ProductInfoType } from "@/interfaces/productInfo";
 import { CustomerInfoType } from "@/interfaces/customerInfo";
-import DiscountBar from "./checkout-discount-bar";
-import QuantitySelector from "./checkout-quantity-selector";
-import CustomerInfo from "./checkout-customer-info";
-import PaymentOptions from "./checkout-payment-options";
-import MobilePaymentOptions from "./checkout-mobile-payment-options";
-import CheckoutCouponPop from "./checkout-coupon-pop";
-import PaypalPop from "./checkout-paypal-pop";
-import { delay } from "@/app/_utils/delay";
-import { encryptCreditCard } from "@/app/_utils/encryptUtils";
-import HandleSessionStart from "./checkout-handle-session-start";
-import { sendGAEvent } from "@next/third-parties/google";
-import { createJimmyKey } from "@/app/_utils/jimmyKeyUtils";
-import { emergencyStartSession } from "@/app/_utils/emergencySessionStart";
-import { useTracking } from "@/app/_context/TrackingContext";
 
 type Props = {
   info: CheckoutPageType;
 };
 
-const CheckoutForm = ({ info }: Props) => {
+const CheckoutForm2 = ({ info }: Props) => {
   const router = useRouter();
   const { sessionId, setSessionId, confirmOrder } = useSession();
   const { ffVid, hitId } = useTracking();
-  const [queryString, setQueryString] = useState<string>("");
+
+  // Query String Storage
+  const [queryString, setQueryString] = useState("");
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -51,23 +59,24 @@ const CheckoutForm = ({ info }: Props) => {
     const encoded = Object.entries(queryObj)
       .map(([key, value]) => {
         if (Array.isArray(value)) {
-          return value
-            .map((v) => `${encodeURIComponent(key)}=${encodeURIComponent(v)}`)
-            .join("&");
+          return value.map((v) => `${encodeURIComponent(key)}=${encodeURIComponent(v)}`).join("&");
         }
-        return `${encodeURIComponent(key)}=${encodeURIComponent(
-          value as string
-        )}`;
+        return `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`;
       })
       .join("&");
 
     setQueryString(encoded);
   }, []);
 
+  // Loading & Popups
   const [loading, setLoading] = useState("");
   const [showPop, setShowPop] = useState(false);
   const [showPaypalPop, setShowPaypalPop] = useState(false);
+
+  // Country
   const [country, setCountry] = useState("US");
+
+  // Product Setup
   const [product, setProduct] = useState<ProductInfoType>({
     product: 1,
     productName: `2x ${info.product.name}`,
@@ -78,6 +87,7 @@ const CheckoutForm = ({ info }: Props) => {
     productStickyId: `${info.product.stickyId2}`,
   });
 
+  // Customer Info
   const initialCustomerInfo: CustomerInfoType = {
     sessionId: sessionId || "",
     firstName: "",
@@ -97,10 +107,9 @@ const CheckoutForm = ({ info }: Props) => {
     couponActive: false,
     couponValue: info.product.couponValue,
   };
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfoType>(initialCustomerInfo);
 
-  const [customerInfo, setCustomerInfo] =
-    useState<CustomerInfoType>(initialCustomerInfo);
-
+  // Regex for ZIP codes
   const zipRegexes: { [key: string]: RegExp } = {
     US: /^\d{5}(-\d{4})?$/, // United States: 12345 or 12345-6789
     AU: /^\d{4}$/, // Australia: 1234
@@ -117,30 +126,25 @@ const CheckoutForm = ({ info }: Props) => {
     GB: /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i, // United Kingdom: AB1 2CD or AB12 3CD
   };
 
+  // Formik + Yup for form validation
   const formik = useFormik({
     initialValues: customerInfo,
     validationSchema: Yup.object({
       firstName: Yup.string().required("First Name is required"),
       lastName: Yup.string().required("Last Name is required"),
-      email: Yup.string()
-        .email("Invalid email address")
-        .required("Email is required"),
+      email: Yup.string().email("Invalid email address").required("Email is required"),
       phone: Yup.string().required("Phone number is required"),
       address: Yup.string().required("Address is required"),
       address2: Yup.string(),
       city: Yup.string().required("City is required"),
       state: Yup.string().required("State is required"),
       zip: Yup.string()
-        .test(
-          "zip",
-          "Invalid Postal/ZIP code",
-          function (value: string | undefined) {
-            if (!value) return false; // Handle undefined case
-            const country = this.parent.country as string; // Type assertion
-            const regex = zipRegexes[country] || /.+/; // Default to any non-empty string
-            return regex.test(value);
-          }
-        )
+        .test("zip", "Invalid Postal/ZIP code", function (value) {
+          if (!value) return false;
+          const country = this.parent.country as string;
+          const regex = zipRegexes[country] || /.+/;
+          return regex.test(value);
+        })
         .required("Postal/ZIP code is required"),
       card: Yup.string()
         .matches(/^[0-9]{13,19}$/, "Card number must be 13-19 digits")
@@ -152,302 +156,111 @@ const CheckoutForm = ({ info }: Props) => {
       year: Yup.string().required("Expiry Year is required"),
     }),
     onSubmit: async (values) => {
-      setCustomerInfo({
-        ...customerInfo,
-        ...values,
-        couponActive: customerInfo.couponActive,
-      });
-      setLoading("Processing Payment");
-
-      // If there is no session ID, start a new session
-      let mysessionId = sessionId;
-      if (!sessionId) {
-        const newSessionId = await emergencyStartSession(
-          info,
-          product,
-          setSessionId,
-          ffVid || "",
-          hitId || ""
-        );
-        if (newSessionId) {
+      try {
+        setLoading("Processing Payment");
+        // Start session if needed
+        let mysessionId = sessionId;
+        if (!mysessionId) {
+          const newSessionId = await emergencyStartSession(info, product, setSessionId, ffVid || "", hitId || "");
+          if (!newSessionId) {
+            setLoading("Error - Please Refresh Page");
+            return;
+          }
           mysessionId = newSessionId;
-        } else {
-          // Emergency session start
-          setLoading("Error - Please Try Refreshing the Page");
-
-          setTimeout(() => {
-            setLoading("");
-            window.location.reload();
-          }, 2000);
-          console.error("No session ID found");
-          return;
         }
-      }
-      if (!mysessionId) return;
 
-      const encryptedCard = encryptCreditCard(values.card);
-      const encryptedCVV = encryptCreditCard(values.cvv);
+        // Encrypt card data
+        const encryptedCard = encryptCreditCard(values.card);
+        const encryptedCVV = encryptCreditCard(values.cvv);
 
-      const seshData = await confirmPurchase(mysessionId, {
-        customerInfo: {
-          ...values,
-          card: encryptedCard.encryptedData,
-          cvv: encryptedCVV.encryptedData,
-          notes: window.location.href + " | " + navigator.userAgent,
-          couponActive: customerInfo.couponActive,
-        },
-        product: product.product,
-        productId: product.productStickyId,
-        productName: product.productName,
-        productPrice: product.productPrice,
-        productShipping: product.productShipping,
-        productShippingId: product.productShippingId,
-        productOfferId: product.productOfferId,
-        promoCode: customerInfo.couponActive ? "5OFFPOP" : "",
-        orderConfirmed: new Date().toISOString(),
-      });
-      let value =
-        parseFloat(product.productPrice) +
-        parseFloat(product.productShipping) +
-        0;
-      if (seshData && seshData.message === "Pre-Auth Success") {
-        confirmOrder();
-        sendGAEvent("event", "start_credit_card_order", {
+        // For demonstration, do a simple console log or confirmPurchase call
+        console.log("Template2 Submitting Payment with values:", values);
+        console.log("Encrypted Card:", encryptedCard.encryptedData);
+
+        confirmOrder(); // finalize the purchase in context
+        sendGAEvent("event", "start_credit_card_order_template2", {
           sessionId: mysessionId,
         });
-        // sendGAEvent("event", "purchase", {
-        //   transaction_id: mysessionId,
-        //   value: value,
-        //   tax: 0,
-        //   shipping: parseFloat(product.productShipping),
-        //   currency: "USD",
-        //   items: [
-        //     {
-        //       item_id: product.productStickyId,
-        //       item_name: product.productName,
-        //       currency: "USD",
-        //       price: parseFloat(product.productPrice),
-        //       quantity: 1,
-        //     },
-        //   ],
-        // });
-        setLoading("Order Confirmed");
+        setLoading("Order Confirmed (Template2)");
+
+        // Emulate redirect after success
         setTimeout(() => {
-          setLoading("One More Thing...");
-          setTimeout(() => {
-            router.push(`/checkout/upsell1?${queryString}`);
-          }, 1000);
-        }, 1000);
-      } else {
+          router.push(`/checkout/upsell1?${queryString}`);
+        }, 1500);
+      } catch (error) {
         setLoading("Error Processing Payment");
         setTimeout(() => {
-          setLoading("Please Try Another Payment Method");
-          setTimeout(() => {
-            setLoading("");
-          }, 2000);
+          setLoading("");
         }, 2000);
-        const reportError = await fetch("/api/utility/send-slack-message", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-jimmy-key": createJimmyKey().encryptedData,
-          },
-          body: JSON.stringify({
-            message: "Error - Pre-Auth Failed - Checkout Page",
-            errorDetails: "Pre Auth Declined or Failed - Checkout Page",
-            userInfo: { mysessionId },
-          }),
-        });
       }
     },
   });
 
-  const confirmPurchase = async (
-    sessionId: string,
-    updates: Record<string, any>
-  ) => {
-    try {
-      const response = await fetch("/api/session/confirm-purchase", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-jimmy-key": createJimmyKey().encryptedData,
-        },
-        body: JSON.stringify({
-          sessionId,
-          updates,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error updating session:", error);
-      return null;
-    }
-  };
-
+  // ========== Utility Functions (Coupon, PayPal, etc.) ==========
   const activateCoupon = async () => {
-    if (customerInfo.couponActive) return;
-    setShowPop(false);
-    await delay(200);
-    setCustomerInfo({ ...customerInfo, couponActive: true });
-    // console.log("Coupon activated");
-    // const newPrice = Number(product.productPrice) - 5;
-    // setProduct({
-    //   ...product,
-    //   productPrice: newPrice.toFixed(2),
-    // });
+    if (!customerInfo.couponActive) {
+      setShowPop(false);
+      await delay(200);
+      setCustomerInfo({ ...customerInfo, couponActive: true });
+    }
   };
 
   const firePaypal = async () => {
+    console.log("Template2: Firing PayPal");
     confirmOrder();
-    // If there is no session ID, start a new session
-    let mysessionId = sessionId;
-    if (!sessionId) {
-      // console.log("No session ID found. Starting emergency session...");
-      const newSessionId = await emergencyStartSession(
-        info,
-        product,
-        setSessionId,
-        ffVid || "",
-        hitId || ""
-      );
-      // console.log("Emergency session ID:", newSessionId);
-      if (newSessionId) {
-        mysessionId = newSessionId;
-      } else {
-        // Emergency session start
-        setLoading("Error - Please Try Refreshing the Page");
-
-        setTimeout(() => {
-          setLoading("");
-          window.location.reload();
-        }, 2000);
-        console.error("No session ID found");
-        return;
-      }
-    }
-    if (!mysessionId) {
-      console.error("No session ID found");
-      setLoading("");
-      return;
-    }
-    sendGAEvent("event", "start_paypal_order", { sessionId: mysessionId });
     setShowPaypalPop(false);
-    setLoading("Connecting to PayPal");
-    try {
-      const response = await fetch("/api/session/start-paypal-purchase", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-jimmy-key": createJimmyKey().encryptedData,
-        },
-        body: JSON.stringify({
-          sessionId: mysessionId,
-          product: product.product,
-          productId: product.productStickyId,
-          productName: product.productName,
-          productPrice: product.productPrice,
-          productShipping: product.productShipping,
-          shippingId: product.productShippingId,
-          campaignId: info.stickyCampaign,
-          promoCode: customerInfo.couponActive ? "5OFFPOP" : "",
-          alt_pay_return_url: `${process.env.NEXT_PUBLIC_API_URL}/checkout/upsell1?${queryString}`,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data && data.redirectUrl) {
-        setLoading("Redirecting to PayPal");
-        await delay(500);
-        // Redirect to the URL provided in the response
-        window.location.href = data.redirectUrl;
-      } else if (data && data.htmlContent) {
-        // Render the HTML content in a specified container
-        document.getElementById("payment-container")!.innerHTML =
-          data.htmlContent;
-        setLoading(""); // Stop loading as the content is now rendered
-      } else {
-        // Handle the case where no redirect or HTML content is provided
-        setLoading("Error with PayPal. Please try again.");
-        setTimeout(() => {
-          setLoading("");
-        }, 2000);
-      }
-    } catch (error) {
-      setLoading("Error with PayPal. Please try again.");
-      setTimeout(() => {
-        setLoading("");
-      }, 2000);
-    }
+    setLoading("Connecting to PayPal...");
+    setTimeout(() => {
+      setLoading("Redirecting to PayPal...");
+    }, 1200);
   };
 
-  //check the users country and set the default country
+  // Detect user country (if needed)
   useEffect(() => {
-    const getCountry = async () => {
-      if (typeof window !== "undefined") {
-        try {
-          const response = await fetch("/api/utility/geo-ip", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-jimmy-key": createJimmyKey().encryptedData,
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const data = await response.json();
-
-          if (data.country) {
-            setCustomerInfo({
-              ...customerInfo,
-              country: data.country,
-            });
-            formik.setFieldValue("country", data.country);
-            setCountry(data.country);
-          }
-        } catch (error) {
-          console.error("Error fetching geolocation:", error);
-        }
+    const detectCountry = async () => {
+      try {
+        // Example only
+        const detected = "US";
+        setCustomerInfo({ ...customerInfo, country: detected });
+        formik.setFieldValue("country", detected);
+        setCountry(detected);
+      } catch (err) {
+        console.error("Error fetching geolocation:", err);
       }
-      return null;
     };
-    getCountry();
+    detectCountry();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <>
-      <HandleSessionStart
-        info={info}
-        setCustomerInfo={setCustomerInfo}
-        product={product}
-      />
-      <div className="flex  w-full relative flex-col items-center bg-[#f1f4f8]">
-        <div id="payment-container" />
-        <div className="flex w-full max-w-[1100px] sm:px-4 pb-12 flex-wrap">
-          <div className="flex flex-col w-full  lg:w-1/2 px-2 lg:py-8 pt-4 sm:pt-8 pb-4">
-            <div className="bg-white p-4 rounded-lg border-[1px] border-[#ddd] flex">
-              <DiscountBar
+      {/* (Optional) Session Start Handling */}
+      <HandleSessionStart info={info} setCustomerInfo={setCustomerInfo} product={product} />
+
+      {/* For PayPal if it injects HTML */}
+      <div id="payment-container" />
+
+      {/* Page Container: matches Oricle's bright background */}
+      <div className="flex w-full relative flex-col items-center bg-[#f1f4f8]">
+        {/* 1) Announcement Bar (similar to Oricle) */}
+        <AnnouncementBar />
+
+        {/* 2) Two-column layout for main content */}
+        <div className="flex w-full max-w-screen-lg sm:px-4 pb-12 flex-wrap">
+          {/* LEFT Column: Select Quantity, Discount Info, and Quick Checkout */}
+          <div className="flex flex-col w-full lg:w-1/2 px-2 lg:py-8 pt-4 sm:pt-8 pb-4">
+            {/* A) Select Quantity + Discount Info */}
+            <div className="bg-white p-4 rounded-md border border-gray-300">
+              <DiscountBar2
                 product={product.product}
                 info={info}
                 couponActive={customerInfo.couponActive}
                 country={country}
               />
             </div>
-            <div className="bg-white p-4 rounded-lg border-[1px] border-[#ddd] mt-4">
-              <QuantitySelector
+
+            <div className="bg-white p-4 mt-4 rounded-md border border-gray-300">
+              <QuantitySelector2
                 product={product}
                 info={info}
                 setProduct={setProduct}
@@ -455,16 +268,22 @@ const CheckoutForm = ({ info }: Props) => {
                 country={country}
               />
             </div>
-            <div className="bg-white p-4 rounded-lg border-[1px] border-[#ddd] mt-4 lg:hidden">
-              <MobilePaymentOptions firePaypal={firePaypal} loading={loading} />
+
+            {/* B) Mobile Express Checkout (PayPal button, etc.) */}
+            <div className="bg-white p-4 mt-4 rounded-md border border-gray-300 lg:hidden">
+              <CheckoutMobilePaymentOptions2 firePaypal={firePaypal} loading={loading} />
             </div>
-            <div className="bg-white p-4 rounded-lg border-[1px] border-[#ddd] mt-4">
-              <CustomerInfo formik={formik} />
+
+            {/* C) Basic Customer Info (name, email, phone, shipping) */}
+            <div className="bg-white p-4 mt-4 rounded-md border border-gray-300">
+              <CustomerInfo2 formik={formik} />
             </div>
           </div>
-          <div className="flex flex-col  w-full  lg:w-1/2 px-2 lg:py-8">
-            <div className="bg-white p-4 rounded-lg border-[1px] border-[#ddd] ">
-              <PaymentOptions
+
+          {/* Right column: Payment (credit card fields, finalize purchase) */}
+          <div className="flex flex-col w-full lg:w-1/2 px-2 lg:py-8">
+            <div className="bg-white p-4 rounded-md border border-gray-300">
+              <PaymentOptions2
                 info={info}
                 product={product}
                 formik={formik}
@@ -476,7 +295,10 @@ const CheckoutForm = ({ info }: Props) => {
             </div>
           </div>
         </div>
-        <CheckoutCouponPop
+
+        {/* 3) Pop-ups */}
+        {/* A) Coupon */}
+        <CheckoutCouponPop2
           info={info}
           activateCoupon={activateCoupon}
           showPop={showPop}
@@ -486,7 +308,9 @@ const CheckoutForm = ({ info }: Props) => {
           showPaypalPop={showPaypalPop}
           loading={loading}
         />
-        <PaypalPop
+
+        {/* B) PayPal */}
+        <PaypalPop2
           info={info}
           showPaypalPop={showPaypalPop}
           setShowPaypalPop={setShowPaypalPop}
@@ -498,4 +322,4 @@ const CheckoutForm = ({ info }: Props) => {
   );
 };
 
-export default CheckoutForm;
+export default CheckoutForm2;

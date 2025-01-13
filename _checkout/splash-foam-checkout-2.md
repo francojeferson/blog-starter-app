@@ -11,6 +11,8 @@ metaDescription: "Ready to purchase Splash Foam Toilet Cleaner? Complete your or
 buttonCta: "Complete Purchase"
 logo: "/images/splash-foam/splash-foam-sales-logo.svg"
 stickyCampaign: "275"
+
+# Existing fields (header, blurbs, product, etc.)
 header:
   product: /images/splash-foam/foam-info.webp
   logo: /images/foam/foam-logo.png
@@ -63,4 +65,8 @@ product:
   shippingId4: "8"
   stickyId4: "40"
   couponValue: "5"
+
+  # NEW FIELDS
+hotBadge: "High Demand: 68 people are looking at this offer!"
+bestSellerBadge: "BEST SELLER"
 ---

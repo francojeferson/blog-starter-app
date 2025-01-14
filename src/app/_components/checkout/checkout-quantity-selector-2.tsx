@@ -5,6 +5,7 @@ import { ProductInfoType } from "@/interfaces/productInfo";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { delay } from "@/app/_utils/delay";
 import { PriceDisplaySimple } from "./checkout-price-display";
+import DemandStrip from "./checkout-demand-strip";
 
 type QuantityProps2 = {
   product: ProductInfoType;
@@ -70,15 +71,19 @@ const QuantitySelector2 = ({ product, info, setProduct, couponActive, country }:
 
   return (
     <>
-      <div className="flex w-full justify-between items-center pb-6">
+      {/* Heading row */}
+      <div className="flex w-full justify-between items-center pb-4">
         <div className="flex w-full items-center">
           <Cog6ToothIcon className="h-5 w-5 mr-2" />
           <h3 className="font-bold text-base sm:text-lg">Step 1: Select Quantity</h3>
         </div>
       </div>
 
-      {/* Layout for 1x & 2x */}
-      <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+      {/* Demand strip directly under the heading */}
+      <DemandStrip />
+
+      {/* 1x & 2x Row */}
+      <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-4">
         {/* Buy 1x */}
         <div
           className={`border rounded-md p-3 w-full sm:w-1/2 cursor-pointer ${
@@ -109,7 +114,7 @@ const QuantitySelector2 = ({ product, info, setProduct, couponActive, country }:
           </div>
         </div>
 
-        {/* Buy 2x (Most Popular) */}
+        {/* Buy 2x (Bestseller) */}
         <div
           className={`relative border rounded-md p-3 w-full sm:w-1/2 cursor-pointer ${
             product.product === 1 ? "border-blue-400" : "border-gray-300"
@@ -143,7 +148,7 @@ const QuantitySelector2 = ({ product, info, setProduct, couponActive, country }:
         </div>
       </div>
 
-      {/* Layout for 3x & 4x */}
+      {/* 3x & 4x Row */}
       <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-3">
         {/* Buy 3x */}
         <div

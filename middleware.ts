@@ -19,7 +19,7 @@ export const config = {
 export default async function middleware(request: NextRequest) {
   // Only apply rate limiting to /api/session/ routes
   if (request.nextUrl.pathname.startsWith("/api/session/")) {
-    const ip = request.ip ?? "127.0.0.1";
+    const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "127.0.0.1";
     const { success } = await ratelimit.limit(ip);
 
     if (!success) {

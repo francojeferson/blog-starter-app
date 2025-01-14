@@ -64,6 +64,9 @@ const CustomerInfo = ({ formik }: CustomerInfoProps) => {
         <h3 className="font-bold text-[16px] hidden lg:block">
           Step 2: Customer Information
         </h3>
+        <h3 className="font-bold text-[16px] lg:hidden">
+          Step 3: Customer Information
+        </h3>
       </div>
       <form onSubmit={formik.handleSubmit}>
         <div className="flex w-full space-x-4">

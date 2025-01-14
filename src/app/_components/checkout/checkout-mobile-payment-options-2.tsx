@@ -12,7 +12,7 @@ const CheckoutMobilePaymentOptions2 = ({ firePaypal, loading }: Props2) => {
     <>
       <div className="flex w-full justify-start items-center pb-4">
         <GlobeAmericasIcon className="h-4 w-4 mr-2" />
-        <h3 className="font-bold text-base">Step 3: Payment Options</h3>
+        <h3 className="font-bold text-base">Step 2: Payment Options</h3>
       </div>
 
       {/* Row with card logos */}

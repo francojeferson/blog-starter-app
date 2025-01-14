@@ -7,6 +7,17 @@ type CustomerInfoProps2 = {
 
 const CustomerInfo2 = ({ formik }: CustomerInfoProps2) => {
   const [formattedPhone, setFormattedPhone] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Detect mobile vs. desktop
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (formik.values.phone) {
@@ -55,7 +66,9 @@ const CustomerInfo2 = ({ formik }: CustomerInfoProps2) => {
     <>
       <div className="flex w-full justify-start items-center pb-6">
         <UserIcon className="h-5 w-5 mr-2" />
-        <h3 className="font-bold text-base sm:text-lg">Step 2: Customer Information</h3>
+        <h3 className="font-bold text-base sm:text-lg">
+          {isMobile ? "Step 3: Customer Information" : "Step 2: Customer Information"}
+        </h3>
       </div>
       <form onSubmit={formik.handleSubmit}>
         <div className="flex w-full space-x-4">

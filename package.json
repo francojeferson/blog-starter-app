@@ -17,7 +17,7 @@
     "@types/yup": "^0.32.0",
     "@upstash/ratelimit": "^2.0.2",
     "@vercel/kv": "^2.0.0",
-    "axios": "^1.7.2",
+    "axios": "^1.8.2",
     "classnames": "^2.5.1",
     "crypto": "^1.0.1",
     "crypto-browserify": "^3.12.0",
